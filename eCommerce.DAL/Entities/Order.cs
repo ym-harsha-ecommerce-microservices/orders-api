@@ -9,7 +9,6 @@ namespace eCommerce.DAL.Entities;
 public class Order
 {
     [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
     public Guid OrderID { get; set; }
     public Guid UserID { get; set; }
     public DateTime? OrderDate { get; set; }

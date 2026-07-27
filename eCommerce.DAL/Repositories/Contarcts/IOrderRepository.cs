@@ -10,6 +10,6 @@ public interface IOrderRepository
     Task<Order?> GetOrderByConditionAsync(FilterDefinition<Order> filter);
     Task<Order?> CreateOrderAsync(Order order);
     Task<Order?> UpdateOrderAsync(Order order);
-    Task DeleteOrderAsync(Guid orderId);
+    Task<bool> DeleteOrderAsync(Guid orderId);
 
 }

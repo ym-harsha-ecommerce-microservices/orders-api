@@ -19,9 +19,12 @@ public class OrderRepository : IOrderRepository
         return order;
     }
 
-    public async Task DeleteOrderAsync(Guid orderId)
+    public async Task<bool> DeleteOrderAsync(Guid orderId)
     {
-        await _orders.DeleteOneAsync(o => o.OrderID == orderId);
+        var res = await _orders.DeleteOneAsync(o => o.OrderID == orderId);
+        if (res.DeletedCount > 0)
+            return true;
+        return false;
     }
 
     public async Task<IEnumerable<Order>> GetAllOrdersAsync()
@@ -42,6 +45,6 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> UpdateOrderAsync(Order order)
     {
         var result = await _orders.ReplaceOneAsync(o => o.OrderID == order.OrderID, order);
-        return result.ModifiedCount > 0 ? order : null;
+        return result.MatchedCount > 0 ? order : null;
     }
 }
