@@ -31,8 +31,8 @@ public static class IoC
 
         services.PostConfigure<MongoDbSettings>(settings =>
         {
-            var host = Environment.GetEnvironmentVariable("MONGODB_HOST") ?? "localhost";
-            var port = Environment.GetEnvironmentVariable("MONGODB_PORT") ?? "27017";
+            var host = Environment.GetEnvironmentVariable("MONGODB_HOST");
+            var port = Environment.GetEnvironmentVariable("MONGODB_PORT");
             settings.ConnectionString = settings.ConnectionString.Replace("$MONGODB_HOST", host)
             .Replace("$MONGODB_PORT", port);
 
