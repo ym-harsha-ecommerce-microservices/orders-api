@@ -1,4 +1,5 @@
 ﻿using eCommerce.BLL.DTO.Order;
+using eCommerce.BLL.Exceptions;
 using eCommerce.BLL.Services.Contarcts;
 using eCommerce.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -63,6 +64,22 @@ public class OrdersController(IOrdersService _ordersService) : ApiBaseController
             Builders<Order>.Filter.Gte(o => o.OrderDate, startOfDay),
             Builders<Order>.Filter.Lt(o => o.OrderDate, endOfDay)
         );
+        var orders = await _ordersService.GetAllOrdersByConditionAsync(filter);
+        return Ok(orders);
+    }
+
+    /// <summary>
+    /// Retrieves all orders placed by a specific user.
+    /// </summary>
+    /// <param name="userID">The unique identifier of the user.</param>
+    /// <returns>A list of orders belonging to the specified user.</returns>
+    [HttpGet("search/userid/{userID:guid}")]
+    public async Task<IActionResult> GetAllOrdersByUserID([FromRoute] Guid userID)
+    {
+        if (userID == Guid.Empty)
+            throw new BadRequestException("UserID cannot be empty.");
+
+        var filter = Builders<Order>.Filter.Eq(o => o.UserID, userID);
         var orders = await _ordersService.GetAllOrdersByConditionAsync(filter);
         return Ok(orders);
     }

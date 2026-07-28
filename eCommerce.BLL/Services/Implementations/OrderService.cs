@@ -3,13 +3,14 @@ using eCommerce.BLL.DTO.Order;
 using eCommerce.BLL.Exceptions;
 using eCommerce.BLL.Services.Contarcts;
 using eCommerce.DAL.Entities;
-using eCommerce.DAL.Repositories.Contarcts;
+using eCommerce.DAL.Repositories.Contracts;
 using MongoDB.Driver;
 
 namespace eCommerce.BLL.Services.Implementations;
 
 public class OrderService(IOrderRepository _orderRepository, IMapper _mapper) : IOrdersService
 {
+    /// <inheritdoc/>
     public async Task<OrderResponse?> CreateOrderAsync(OrderAddRequest orderAddRequest)
     {
         var order = _mapper.Map<Order>(orderAddRequest);
@@ -21,7 +22,7 @@ public class OrderService(IOrderRepository _orderRepository, IMapper _mapper) : 
 
         return _mapper.Map<OrderResponse>(order);
     }
-
+    /// <inheritdoc/>
     public async Task DeleteOrderAsync(Guid orderID)
     {
         var deleted = await _orderRepository.DeleteOrderAsync(orderID);
@@ -29,19 +30,21 @@ public class OrderService(IOrderRepository _orderRepository, IMapper _mapper) : 
             throw new NotFoundException($"Order with ID {orderID} was not found.");
 
     }
-
+    /// <inheritdoc/>
     public async Task<List<OrderResponse>> GetAllOrdersAsync()
     {
         var orders = await _orderRepository.GetAllOrdersAsync();
         return _mapper.Map<List<OrderResponse>>(orders);
     }
-
+    /// <inheritdoc/>
     public async Task<List<OrderResponse>> GetAllOrdersByConditionAsync(FilterDefinition<Order> filter)
     {
         var orders = await _orderRepository.GetAllOrdersByConditionAsync(filter);
         return _mapper.Map<List<OrderResponse>>(orders);
 
     }
+
+    /// <inheritdoc/>
 
     public async Task<OrderResponse> GetOrderByConditionAsync(FilterDefinition<Order> filter)
     {
@@ -52,7 +55,7 @@ public class OrderService(IOrderRepository _orderRepository, IMapper _mapper) : 
         return _mapper.Map<OrderResponse>(order);
 
     }
-
+    /// <inheritdoc/>
     public async Task<OrderResponse> UpdateOrderAsync(OrderUpdateRequest orderUpdateRequest)
     {
         var builder = Builders<Order>.Filter;

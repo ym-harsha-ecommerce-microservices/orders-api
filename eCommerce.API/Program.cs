@@ -49,6 +49,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseGlobalExceptionHandling();
+app.UseRouting();
 
 if (app.Environment.IsDevelopment())
 {
@@ -56,7 +57,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "eCommerce Orders API v1");
-        options.RoutePrefix = string.Empty; // Swagger UI at root URL, remove if you prefer /swagger
     });
 }
 
@@ -64,9 +64,8 @@ app.UseCors("AllowAll");
 
 //app.UseStaticFiles();
 
-app.UseRouting();
-
-//app.UseAuthentication();
+app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

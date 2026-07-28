@@ -1,7 +1,7 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
@@ -9,10 +9,12 @@ EXPOSE 8081
 
 
 # This stage is used to build the service project
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["eCommerce.API/eCommerce.API.csproj", "eCommerce.API/"]
+COPY ["./eCommerce.API/eCommerce.API.csproj", "./eCommerce.API/"]
+COPY ["./eCommerce.BLL/eCommerce.BLL.csproj", "./eCommerce.BLL/"]
+COPY ["./eCommerce.DAL/eCommerce.DAL.csproj", "./eCommerce.DAL/"]
 RUN dotnet restore "./eCommerce.API/eCommerce.API.csproj"
 COPY . .
 WORKDIR "/src/eCommerce.API"
@@ -27,4 +29,8 @@ RUN dotnet publish "./eCommerce.API.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+ENV MONGODB_HOST=localhost
+ENV MONGODB_PORT=27017
+
 ENTRYPOINT ["dotnet", "eCommerce.API.dll"]
