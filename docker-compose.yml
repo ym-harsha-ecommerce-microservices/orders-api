@@ -1,0 +1,122 @@
+services:
+  orders-api:
+    build:
+      context: .
+      dockerfile: ./eCommerce.API/Dockerfile
+    container_name: orders-api
+    image: ecommerce-orders-microservice:v1.0
+    ports:
+      - "7000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_HOST=orders-db
+      - DB_PORT=27017
+      - DB_NAME=eCommerceOrders
+      - USERS_MICROSERVICE_NAME=users-api
+      - USERS_MICROSERVICE_PORT=8080
+      - PRODUCTS_MICROSERVICE_NAME=products-api
+      - PRODUCTS_MICROSERVICE_PORT=8080
+      - REDIS_HOST=redis-cache
+      - REDIS_PORT=6379
+    depends_on:
+      - orders-db
+
+    networks:
+      - ecommerce-net
+      - orders-net
+
+  orders-db:
+    image: mongo:latest
+    container_name: orders-db
+    environment:
+      MONGO_INITDB_DATABASE: eCommerceOrders
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./init-orders-db.js:/docker-entrypoint-initdb.d/init.js
+    networks:
+      - orders-net
+
+  users-api:
+    image: ecommerce-users-microservice:v1.0
+    container_name: users-api
+    ports:
+      - "8000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_HOST=users-db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_NAME=eCommerceUsers
+      - DB_PASSWORD=Y0ussef000
+    depends_on:
+      - users-db
+    networks:
+      - ecommerce-net
+      - users-net
+
+
+  users-db:
+    image: postgres:latest
+    container_name: users-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Y0ussef000
+      POSTGRES_DB: eCommerceUsers
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-users-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - users-net
+
+  products-api:
+    image: ecommerce-products-microservice:v1.0
+    container_name: products-api
+    ports:
+      - "9000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_SERVER=products-db
+      - DB_USER=root
+      - DB_PASSWORD=Y0ussef000
+      - DB_NAME=eCommerceProducts
+    depends_on:
+      - products-db
+  
+    networks:
+      - ecommerce-net
+      - products-net
+
+  products-db:
+    image: mysql:latest
+    container_name: products-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Y0ussef000
+      MYSQL_DATABASE: eCommerceProducts
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - ./init-products-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - products-net
+
+
+  redis-cache:
+    image: redis:latest
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    networks:
+      - ecommerce-net
+
+networks:
+  ecommerce-net:
+    driver: bridge
+  orders-net:
+    driver: bridge
+  users-net:
+    driver: bridge
+  products-net:
+    driver: bridge

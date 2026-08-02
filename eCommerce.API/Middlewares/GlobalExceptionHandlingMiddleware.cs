@@ -59,6 +59,11 @@ public class GlobalExceptionHandlingMiddleware
             _logger.LogError(ex, "Database error occurred: {Message}", ex.Message);
             await WriteErrorResponse(httpContext, HttpStatusCode.ServiceUnavailable, "A database error occurred. Please try again later.");
         }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Downstream service call failed: {Message}", ex.Message);
+            await WriteErrorResponse(httpContext, HttpStatusCode.BadGateway, "A dependent service is currently unavailable. Please try again later.");
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);

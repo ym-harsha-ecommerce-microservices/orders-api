@@ -31,11 +31,13 @@ public static class IoC
 
         services.PostConfigure<MongoDbSettings>(settings =>
         {
-            var host = Environment.GetEnvironmentVariable("MONGODB_HOST");
-            var port = Environment.GetEnvironmentVariable("MONGODB_PORT");
-            settings.ConnectionString = settings.ConnectionString.Replace("$MONGODB_HOST", host)
-            .Replace("$MONGODB_PORT", port);
+            var host = Environment.GetEnvironmentVariable("DB_HOST");
+            var port = Environment.GetEnvironmentVariable("DB_PORT");
+            var databaseName = Environment.GetEnvironmentVariable("DB_NAME");
+            settings.ConnectionString = settings.ConnectionString.Replace("$DB_HOST", host)
+            .Replace("$DB_PORT", port);
 
+            settings.DatabaseName = settings.DatabaseName.Replace("$DB_NAME", databaseName);
         });
 
 

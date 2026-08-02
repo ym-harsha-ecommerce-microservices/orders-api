@@ -9,4 +9,7 @@ public class OrderResponse
     public DateTime OrderDate { get; set; }
     public decimal TotalBill { get; set; }
     public List<OrderItemResponse> OrderItems { get; set; } = default!;
+
+    public string? UserPersonName { get; set; }
+    public string? Email { get; set; }
 }

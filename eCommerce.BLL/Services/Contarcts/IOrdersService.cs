@@ -34,14 +34,14 @@ public interface IOrdersService
     /// </summary>
     /// <param name="orderAddRequest">The order details to create.</param>
     /// <returns>The newly created order.</returns>
-    Task<OrderResponse> CreateOrderAsync(OrderAddRequest orderAddRequest);
+    Task<OrderResponse?> CreateOrderAsync(OrderAddRequest orderAddRequest);
 
     /// <summary>
     /// Updates an existing order.
     /// </summary>
     /// <param name="orderUpdateRequest">The updated order details.</param>
     /// <returns>The updated order.</returns>
-    Task<OrderResponse> UpdateOrderAsync(OrderUpdateRequest orderUpdateRequest);
+    Task<OrderResponse?> UpdateOrderAsync(OrderUpdateRequest orderUpdateRequest);
 
     /// <summary>
     /// Deletes an order by its unique Order ID.

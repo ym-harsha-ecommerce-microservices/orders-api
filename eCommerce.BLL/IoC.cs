@@ -1,4 +1,7 @@
-﻿using eCommerce.BLL.Services.Contarcts;
+﻿using eCommerce.BLL.HttpClients;
+using eCommerce.BLL.Policies.Implementations;
+using eCommerce.BLL.Policies.Interfaces;
+using eCommerce.BLL.Services.Contarcts;
 using eCommerce.BLL.Services.Implementations;
 using eCommerce.BLL.Validators;
 using FluentValidation;
@@ -30,6 +33,47 @@ public static class IoC
         services.AddValidatorsFromAssemblyContaining<OrderAddRequestValidator>();
 
         services.AddScoped<IOrdersService, OrderService>();
+
+        services.AddTransient<IPolicyService, PolicyService>();
+        services.AddTransient<IUsersMicroservicePolicies, UsersMicroservicePolicies>();
+        services.AddTransient<IProductsMicroservicePolicies, ProductsMicroservicePolicies>();
+
+
+        services.AddHttpClient<UsersMicroserviceHttpClient>(client =>
+        {
+            var usersMicroserviceName = Environment.GetEnvironmentVariable("USERS_MICROSERVICE_NAME");
+            var usersMicroservicePort = Environment.GetEnvironmentVariable("USERS_MICROSERVICE_PORT");
+            client.BaseAddress = new Uri($"http://{usersMicroserviceName}:{usersMicroservicePort}");
+        })
+        .AddPolicyHandler((serviceProvider, request) =>
+        {
+            var usersPolicies = serviceProvider.GetRequiredService<IUsersMicroservicePolicies>();
+            return usersPolicies.GetUsersPolicies();
+        });
+
+
+        services.AddHttpClient<ProductsMicroserviceHttpClient>(client =>
+        {
+            var productsMicroserviceName = Environment.GetEnvironmentVariable("PRODUCTS_MICROSERVICE_NAME");
+            var productsMicroservicePort = Environment.GetEnvironmentVariable("PRODUCTS_MICROSERVICE_PORT");
+            client.BaseAddress = new Uri($"http://{productsMicroserviceName}:{productsMicroservicePort}");
+        })
+            .AddPolicyHandler((serviceProvider, request) =>
+        {
+            var productsPolicies = serviceProvider.GetRequiredService<IProductsMicroservicePolicies>();
+            return productsPolicies.GetProductsPolicies();
+        });
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST");
+            var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT");
+            options.Configuration = $"{redisHost}:{redisPort}";
+            options.InstanceName = "OrdersService_Cache_";
+        });
+
+
+
 
         return services;
     }

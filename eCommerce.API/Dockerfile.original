@@ -12,9 +12,9 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["eCommerce.API/eCommerce.API.csproj", "eCommerce.API/"]
-COPY ["eCommerce.BLL/eCommerce.BLL.csproj", "eCommerce.BLL/"]
-COPY ["eCommerce.DAL/eCommerce.DAL.csproj", "eCommerce.DAL/"]
+COPY ["./eCommerce.API/eCommerce.API.csproj", "./eCommerce.API/"]
+COPY ["./eCommerce.BLL/eCommerce.BLL.csproj", "./eCommerce.BLL/"]
+COPY ["./eCommerce.DAL/eCommerce.DAL.csproj", "./eCommerce.DAL/"]
 RUN dotnet restore "./eCommerce.API/eCommerce.API.csproj"
 COPY . .
 WORKDIR "/src/eCommerce.API"
@@ -30,18 +30,12 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENV ASPNETCORE_ENVIRONMENT="Development"
-ENV DB_HOST="localhost"
-ENV DB_PORT="27017"
-ENV DB_NAME="eCommerceOrders"
 
-ENV USERS_MICROSERVICE_NAME="localhost"
-ENV USERS_MICROSERVICE_PORT="8000"
-
-ENV PRODUCTS_MICROSERVICE_NAME="localhost"
-ENV PRODUCTS_MICROSERVICE_PORT="9000"
-
-ENV REDIS_HOST="localhost"
-ENV REDIS_PORT="6379"
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV DB_HOST=mongo
+ENV DB_PORT=27017
+ENV DB_NAME=eCommerceOrders
+ENV USERS_MICROSERVICE_NAME=localhost 
+ENV USERS_MICROSERVICE_PORT=9090
 
 ENTRYPOINT ["dotnet", "eCommerce.API.dll"]
