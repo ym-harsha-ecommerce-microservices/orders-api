@@ -12,7 +12,16 @@
         "USERS_MICROSERVICE_NAME": "localhost",
         "USERS_MICROSERVICE_PORT": "8000",
         "REDIS_HOST": "localhost",
-        "REDIS_PORT": "6379"
+        "REDIS_PORT": "6379",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_PORT": "5672",
+        "RABBITMQ_USERNAME": "guest",
+        "RABBITMQ_PASSWORD": "guest",
+        "RABBITMQ_PRODUCT_EXCHANGE": "product.exchange",
+        "RABBITMQ_PRODUCT_UPDATE_NAME_ROUTEING_KEY": "product.update.name",
+        "RABBITMQ_PRODUCT_UPDATE_QUEUE": "product.update.queue",
+        "RABBITMQ_PRODUCT_DELETE_ROUTEING_KEY": "product.delete",
+        "RABBITMQ_PRODUCT_DELETE_QUEUE": "product.delete.queue"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:7000"
@@ -29,7 +38,16 @@
         "USERS_MICROSERVICE_NAME": "localhost",
         "USERS_MICROSERVICE_PORT": "8000",
         "REDIS_HOST": "localhost",
-        "REDIS_PORT": "6379"
+        "REDIS_PORT": "6379",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_PORT": "5672",
+        "RABBITMQ_USERNAME": "guest",
+        "RABBITMQ_PASSWORD": "guest",
+        "RABBITMQ_PRODUCT_EXCHANGE": "product.exchange",
+        "RABBITMQ_PRODUCT_UPDATE_NAME_ROUTEING_KEY": "product.update.name",
+        "RABBITMQ_PRODUCT_UPDATE_QUEUE": "product.update.queue",
+        "RABBITMQ_PRODUCT_DELETE_ROUTEING_KEY": "product.delete",
+        "RABBITMQ_PRODUCT_DELETE_QUEUE": "product.delete.queue"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7186;http://localhost:7000"
@@ -46,7 +64,16 @@
         "USERS_MICROSERVICE_NAME": "localhost",
         "USERS_MICROSERVICE_PORT": "8000",
         "REDIS_HOST": "localhost",
-        "REDIS_PORT": "6379"
+        "REDIS_PORT": "6379",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_PORT": "5672",
+        "RABBITMQ_USERNAME": "guest",
+        "RABBITMQ_PASSWORD": "guest",
+        "RABBITMQ_PRODUCT_EXCHANGE": "product.exchange",
+        "RABBITMQ_PRODUCT_UPDATE_NAME_ROUTEING_KEY": "product.update.name",
+        "RABBITMQ_PRODUCT_UPDATE_QUEUE": "product.update.queue",
+        "RABBITMQ_PRODUCT_DELETE_ROUTEING_KEY": "product.delete",
+        "RABBITMQ_PRODUCT_DELETE_QUEUE": "product.delete.queue"
       }
     },
     "Container (Dockerfile)": {
@@ -62,7 +89,16 @@
         "USERS_MICROSERVICE_NAME": "localhost",
         "USERS_MICROSERVICE_PORT": "8000",
         "REDIS_HOST": "localhost",
-        "REDIS_PORT": "6379"
+        "REDIS_PORT": "6379",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_PORT": "5672",
+        "RABBITMQ_USERNAME": "guest",
+        "RABBITMQ_PASSWORD": "guest",
+        "RABBITMQ_PRODUCT_EXCHANGE": "product.exchange",
+        "RABBITMQ_PRODUCT_UPDATE_NAME_ROUTEING_KEY": "product.update.name",
+        "RABBITMQ_PRODUCT_UPDATE_QUEUE": "product.update.queue",
+        "RABBITMQ_PRODUCT_DELETE_ROUTEING_KEY": "product.delete",
+        "RABBITMQ_PRODUCT_DELETE_QUEUE": "product.delete.queue"
       },
       "publishAllPorts": true,
       "useSSL": true

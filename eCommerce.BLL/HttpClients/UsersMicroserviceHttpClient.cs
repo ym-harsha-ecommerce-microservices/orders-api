@@ -1,36 +1,25 @@
-﻿using eCommerce.BLL.DTO.UsersMicroservice;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using eCommerce.BLL.Constants;
+using eCommerce.BLL.DTO.UsersMicroservice;
+using eCommerce.BLL.Services.Contracts;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace eCommerce.BLL.HttpClients;
 
 public class UsersMicroserviceHttpClient(
     HttpClient _httpClient,
-    IDistributedCache _distributedCache,
+    ICacheService _cacheService,
     ILogger<UsersMicroserviceHttpClient> _logger)
 {
     public async Task<UserDTO?> GetUserByUserIDAsync(Guid userID)
     {
-        string cacheKey = $"user_details_{userID}";
+        string cacheKey = CacheKeys.UserDetails(userID);
 
-        try
-        {
-            string? cachedUserJson = await _distributedCache.GetStringAsync(cacheKey);
+        var cachedUser = await _cacheService.GetAsync<UserDTO>(cacheKey);
+        if (cachedUser != null) return cachedUser;
 
-            if (!string.IsNullOrWhiteSpace(cachedUserJson))
-            {
-                return JsonSerializer.Deserialize<UserDTO?>(cachedUserJson);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Redis Cache is unavailable while reading user {UserID}. Bypassing cache and falling back to Users API.", userID);
-        }
-
-        var response = await _httpClient.GetAsync($"api/users/{userID}");
+        var response = await _httpClient.GetAsync($"gateway/users/{userID}");
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -50,21 +39,7 @@ public class UsersMicroserviceHttpClient(
 
         if (user != null)
         {
-            try
-            {
-                var cacheOptions = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
-                    SlidingExpiration = TimeSpan.FromMinutes(3)
-                };
-
-                var userJson = JsonSerializer.Serialize(user);
-                await _distributedCache.SetStringAsync(cacheKey, userJson, cacheOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to save user {UserID} in Redis Cache.", userID);
-            }
+            await _cacheService.SetAsync(cacheKey, user, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(3));
         }
         else
         {
@@ -81,54 +56,54 @@ public class UsersMicroserviceHttpClient(
             return [];
         }
 
-        var orderedIds = allUserIds.OrderBy(id => id).ToList();
-        string cacheKey = $"users_details_{JsonSerializer.Serialize(orderedIds)}";
+        var distinctIds = allUserIds.Distinct().ToList();
 
-        try
+        var cacheKeys = distinctIds.ToDictionary(id => id, id => CacheKeys.UserDetails(id));
+
+        var cachedResults = await _cacheService.GetBulkAsync<UserDTO>(cacheKeys.Values);
+
+        var cachedUsers = new List<UserDTO>();
+        var missingIds = new List<Guid>();
+
+        foreach (var id in distinctIds)
         {
-            string? cachedUsersJson = await _distributedCache.GetStringAsync(cacheKey);
-
-            if (!string.IsNullOrWhiteSpace(cachedUsersJson))
+            var key = cacheKeys[id];
+            if (cachedResults.TryGetValue(key, out var user) && user != null)
             {
-                return JsonSerializer.Deserialize<List<UserDTO>>(cachedUsersJson) ?? [];
+                cachedUsers.Add(user);
+            }
+            else
+            {
+                missingIds.Add(id);
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Redis Cache is unavailable while fetching user list. Bypassing cache and falling back to Users API.");
-        }
 
-        var response = await _httpClient.PostAsJsonAsync("api/users/search/user-ids", allUserIds);
+        if (!missingIds.Any()) return cachedUsers;
+
+        var response = await _httpClient.PostAsJsonAsync("gateway/users/search/user-ids", missingIds);
 
         if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
         {
-            _logger.LogWarning("Users API is unavailable (503) while fetching user list. Returning an empty list as a fallback.");
-            return [];
+            _logger.LogWarning("Users API is unavailable (503) while fetching missing users. Returning partial cached results.");
+            return cachedUsers;
         }
 
         response.EnsureSuccessStatusCode();
+        var fetchedUsers = await response.Content.ReadFromJsonAsync<List<UserDTO>>() ?? [];
 
-        var users = await response.Content.ReadFromJsonAsync<List<UserDTO>>() ?? [];
-
-        if (users.Any())
+        if (fetchedUsers.Any())
         {
-            try
-            {
-                var cacheOptions = new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
-                    SlidingExpiration = TimeSpan.FromMinutes(3)
-                };
+            var itemsToCache = fetchedUsers.ToDictionary(
+                u => CacheKeys.UserDetails(u.UserID),
+                u => u
+            );
 
-                await _distributedCache.SetStringAsync(cacheKey, JsonSerializer.Serialize(users), cacheOptions);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to save the list of users in Redis Cache.");
-            }
+            await _cacheService.SetBulkAsync(itemsToCache, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(3));
+
+            cachedUsers.AddRange(fetchedUsers);
         }
 
-        return users;
+        return cachedUsers;
     }
 
     private static UserDTO GetDummyUser(Guid userID)

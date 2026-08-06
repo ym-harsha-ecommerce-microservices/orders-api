@@ -4,7 +4,7 @@ using eCommerce.BLL.DTO.ProductsMicroservice;
 using eCommerce.BLL.DTO.UsersMicroservice;
 using eCommerce.BLL.Exceptions;
 using eCommerce.BLL.HttpClients;
-using eCommerce.BLL.Services.Contarcts;
+using eCommerce.BLL.Services.Contracts;
 using eCommerce.DAL.Entities;
 using eCommerce.DAL.Repositories.Contracts;
 using MongoDB.Driver;

@@ -2,7 +2,7 @@
 using eCommerce.DAL.Entities;
 using MongoDB.Driver;
 
-namespace eCommerce.BLL.Services.Contarcts;
+namespace eCommerce.BLL.Services.Contracts;
 
 /// <summary>
 /// Defines the business logic operations for managing customer orders.

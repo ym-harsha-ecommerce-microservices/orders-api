@@ -12,15 +12,33 @@ services:
       - DB_HOST=orders-db
       - DB_PORT=27017
       - DB_NAME=eCommerceOrders
-      - USERS_MICROSERVICE_NAME=users-api
+      
+      - USERS_MICROSERVICE_NAME=gateway-api
       - USERS_MICROSERVICE_PORT=8080
-      - PRODUCTS_MICROSERVICE_NAME=products-api
+
+      - PRODUCTS_MICROSERVICE_NAME=gateway-api
       - PRODUCTS_MICROSERVICE_PORT=8080
+
       - REDIS_HOST=redis-cache
       - REDIS_PORT=6379
-    depends_on:
-      - orders-db
 
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+
+      - RABBITMQ_PRODUCT_EXCHANGE=product.exchange
+      - RABBITMQ_PRODUCT_UPDATE_NAME_ROUTEING_KEY=product.update.name
+      - RABBITMQ_PRODUCT_DELETE_ROUTEING_KEY=product.delete
+      - RABBITMQ_PRODUCT_DELETE_QUEUE=product.delete.queue
+      - RABBITMQ_PRODUCT_UPDATE_QUEUE=product.update.queue
+    depends_on:
+      orders-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
     networks:
       - ecommerce-net
       - orders-net
@@ -44,6 +62,7 @@ services:
       - "8000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+
       - DB_HOST=users-db
       - DB_PORT=5432
       - DB_USERNAME=postgres
@@ -54,7 +73,6 @@ services:
     networks:
       - ecommerce-net
       - users-net
-
 
   users-db:
     image: postgres:latest
@@ -77,13 +95,29 @@ services:
       - "9000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+
       - DB_SERVER=products-db
       - DB_USER=root
       - DB_PASSWORD=Y0ussef000
       - DB_NAME=eCommerceProducts
+
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+
+      - RABBITMQ_PRODUCT_EXCHANGE=product.exchange
+      - RABBITMQ_PRODUCT_UPDATE_NAME_ROUTEING_KEY=product.update.name
+      - RABBITMQ_PRODUCT_DELETE_ROUTEING_KEY=product.delete
+      - RABBITMQ_PRODUCT_DELETE_QUEUE=product.delete.queue
+      - RABBITMQ_PRODUCT_UPDATE_QUEUE=product.update.queue
     depends_on:
-      - products-db
-  
+      products-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
     networks:
       - ecommerce-net
       - products-net
@@ -96,18 +130,53 @@ services:
       MYSQL_DATABASE: eCommerceProducts
     ports:
       - "3307:3306"
-
     volumes:
       - ./init-products-db.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - products-net
-
 
   redis-cache:
     image: redis:latest
     container_name: redis-cache
     ports:
       - "6379:6379"
+    networks:
+      - ecommerce-net
+
+  rabbitmq:
+    image: rabbitmq:4.3.4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecommerce-net
+
+  gateway-api:
+    image: ecommerce-gateway-microservice:v1.0
+    container_name: gateway-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - USERS_MICROSERVICE_NAME=users-api
+      - USERS_MICROSERVICE_PORT=8080
+      - PRODUCTS_MICROSERVICE_NAME=products-api
+      - PRODUCTS_MICROSERVICE_PORT=8080
+      - ORDERS_MICROSERVICE_NAME=orders-api
+      - ORDERS_MICROSERVICE_PORT=8080
+    depends_on:
+      - users-api
+      - products-api
+      - orders-api
     networks:
       - ecommerce-net
 
