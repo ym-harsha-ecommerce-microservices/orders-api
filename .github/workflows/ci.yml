@@ -1,4 +1,4 @@
-name: Products API CI
+name: Orders API CI
 
 on:
   # Trigger the workflow on push or pull request events to the main branch
@@ -24,15 +24,15 @@ jobs:
 
       # restore dependencies (download NuGet packages) 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore eCommerceSolution.OrdersService.sln
 
       # build without restoring dependencies (already done in previous step)
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build eCommerceSolution.OrdersService.sln --no-restore
 
       # run tests without building (already done in previous step)
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test eCommerceSolution.OrdersService.sln --no-build --verbosity normal
 
     
     - name: Log in to GitHub Container Registry
