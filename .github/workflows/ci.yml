@@ -1,0 +1,53 @@
+name: Products API CI
+
+on:
+  # Trigger the workflow on push or pull request events to the main branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # clone the repo
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+      # setup .NET SDK
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.x.x' 
+
+      # restore dependencies (download NuGet packages) 
+    - name: Restore dependencies
+      run: dotnet restore
+
+      # build without restoring dependencies (already done in previous step)
+    - name: Build
+      run: dotnet build --no-restore
+
+      # run tests without building (already done in previous step)
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+
+    
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.ECOMMERCE_PIPELINE_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./eCommerce.API/Dockerfile
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/ecommerce-orders-api:latest
+          ghcr.io/${{ github.repository_owner }}/ecommerce-orders-api:v1.${{ github.run_number }}
