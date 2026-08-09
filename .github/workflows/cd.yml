@@ -1,0 +1,21 @@
+name: Orders API CD
+
+on:
+  workflow_run:
+    workflows: ["Orders API CI"]
+    types:
+      - completed
+    branches:
+      - main 
+
+jobs:
+  deploy-to-local-cluster:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted
+
+    steps:
+    - name: Verify Local Kubernetes Connection
+      run: kubectl get nodes
+
+    - name: Hello from Local Machine
+      run: echo "The self-hosted runner is successfully executing commands on the local machine!"
