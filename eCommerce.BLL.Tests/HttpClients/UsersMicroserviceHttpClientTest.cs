@@ -3,7 +3,6 @@ using eCommerce.BLL.HttpClients;
 using eCommerce.BLL.Services.Contracts;
 using eCommerce.Tests.TestHelpers;
 using FluentAssertions;
-using Flurl.Http.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Net;
@@ -130,12 +129,20 @@ public class UsersMicroserviceHttpClientTest
         var cachedUser = new UserDTO { UserID = id1 };
         var fetchedUser = new UserDTO { UserID = id2 };
 
+        // NOTE: the real cache keys come from CacheKeys.UserDetails(id), whose
+        // exact format we don't know here - so we capture whatever keys the
+        // client actually passes in and build the returned dictionary from
+        // those (same order as the requested IDs: id1 first, id2 second).
         _cacheServiceMock
             .Setup(temp => temp.GetBulkAsync<UserDTO>(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync(new Dictionary<string, UserDTO?>
+            .Returns<IEnumerable<string>>(keys =>
             {
-                ["k1"] = cachedUser,
-                ["k2"] = null
+                var keyList = keys.ToList();
+                return Task.FromResult<IDictionary<string, UserDTO?>>(new Dictionary<string, UserDTO?>
+                {
+                    [keyList[0]] = cachedUser,
+                    [keyList[1]] = null
+                });
             });
 
         var client = BuildClient(req => new HttpResponseMessage(HttpStatusCode.OK)
@@ -164,10 +171,14 @@ public class UsersMicroserviceHttpClientTest
 
         _cacheServiceMock
             .Setup(temp => temp.GetBulkAsync<UserDTO>(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync(new Dictionary<string, UserDTO?>
+            .Returns<IEnumerable<string>>(keys =>
             {
-                ["k1"] = cachedUser,
-                ["k2"] = null
+                var keyList = keys.ToList();
+                return Task.FromResult<IDictionary<string, UserDTO?>>(new Dictionary<string, UserDTO?>
+                {
+                    [keyList[0]] = cachedUser,
+                    [keyList[1]] = null
+                });
             });
 
         var client = BuildClient(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable), out _);

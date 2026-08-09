@@ -140,12 +140,21 @@ public class ProductsMicroserviceHttpClientTest
         var product1 = new ProductDTO { ProductID = id1 };
         var product2 = new ProductDTO { ProductID = id2 };
 
+        // NOTE: the real cache keys come from CacheKeys.ProductDetails(id), whose
+        // exact format we don't know here - so rather than guessing a literal
+        // string, we capture whatever keys the client actually passes in and
+        // build the returned dictionary from those (in the same order as the
+        // requested IDs: id1 first, id2 second).
         _cacheServiceMock
             .Setup(temp => temp.GetBulkAsync<ProductDTO>(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync(new Dictionary<string, ProductDTO?>
+            .Returns<IEnumerable<string>>(keys =>
             {
-                ["k1"] = product1,
-                ["k2"] = product2
+                var keyList = keys.ToList();
+                return Task.FromResult<IDictionary<string, ProductDTO?>>(new Dictionary<string, ProductDTO?>
+                {
+                    [keyList[0]] = product1,
+                    [keyList[1]] = product2
+                });
             });
 
         var client = BuildClient(_ => throw new InvalidOperationException("should not be called"), out var handler);
@@ -169,10 +178,14 @@ public class ProductsMicroserviceHttpClientTest
 
         _cacheServiceMock
             .Setup(temp => temp.GetBulkAsync<ProductDTO>(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync(new Dictionary<string, ProductDTO?>
+            .Returns<IEnumerable<string>>(keys =>
             {
-                ["k1"] = cachedProduct,
-                ["k2"] = null
+                var keyList = keys.ToList();
+                return Task.FromResult<IDictionary<string, ProductDTO?>>(new Dictionary<string, ProductDTO?>
+                {
+                    [keyList[0]] = cachedProduct,
+                    [keyList[1]] = null
+                });
             });
 
         var client = BuildClient(req => new HttpResponseMessage(HttpStatusCode.OK)
@@ -202,10 +215,14 @@ public class ProductsMicroserviceHttpClientTest
 
         _cacheServiceMock
             .Setup(temp => temp.GetBulkAsync<ProductDTO>(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync(new Dictionary<string, ProductDTO?>
+            .Returns<IEnumerable<string>>(keys =>
             {
-                ["k1"] = cachedProduct,
-                ["k2"] = null
+                var keyList = keys.ToList();
+                return Task.FromResult<IDictionary<string, ProductDTO?>>(new Dictionary<string, ProductDTO?>
+                {
+                    [keyList[0]] = cachedProduct,
+                    [keyList[1]] = null
+                });
             });
 
         var client = BuildClient(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable), out _);
