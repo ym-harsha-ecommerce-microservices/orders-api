@@ -12,8 +12,8 @@ using MongoDB.Driver;
 namespace eCommerce.BLL.Services.Implementations;
 
 public class OrderService(IOrderRepository _orderRepository, IMapper _mapper,
-    UsersMicroserviceHttpClient _usersMicroserviceHttpClient,
-    ProductsMicroserviceHttpClient _productsMicroserviceHttpClient) : IOrdersService
+    IUsersMicroserviceHttpClient _usersMicroserviceHttpClient,
+    IProductsMicroserviceHttpClient _productsMicroserviceHttpClient) : IOrdersService
 {
     /// <inheritdoc/>
     public async Task<OrderResponse?> CreateOrderAsync(OrderAddRequest orderAddRequest)

@@ -10,7 +10,7 @@ namespace eCommerce.BLL.HttpClients;
 public class UsersMicroserviceHttpClient(
     HttpClient _httpClient,
     ICacheService _cacheService,
-    ILogger<UsersMicroserviceHttpClient> _logger)
+    ILogger<UsersMicroserviceHttpClient> _logger) : IUsersMicroserviceHttpClient
 {
     public async Task<UserDTO?> GetUserByUserIDAsync(Guid userID)
     {

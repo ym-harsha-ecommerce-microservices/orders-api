@@ -62,7 +62,7 @@ public static class IoC
         services.AddTransient<IProductsMicroservicePolicies, ProductsMicroservicePolicies>();
 
 
-        services.AddHttpClient<UsersMicroserviceHttpClient>(client =>
+        services.AddHttpClient<IUsersMicroserviceHttpClient, UsersMicroserviceHttpClient>(client =>
         {
             var usersMicroserviceName = Environment.GetEnvironmentVariable("USERS_MICROSERVICE_NAME");
             var usersMicroservicePort = Environment.GetEnvironmentVariable("USERS_MICROSERVICE_PORT");
@@ -75,7 +75,7 @@ public static class IoC
         });
 
 
-        services.AddHttpClient<ProductsMicroserviceHttpClient>(client =>
+        services.AddHttpClient<IProductsMicroserviceHttpClient, ProductsMicroserviceHttpClient>(client =>
         {
             var productsMicroserviceName = Environment.GetEnvironmentVariable("PRODUCTS_MICROSERVICE_NAME");
             var productsMicroservicePort = Environment.GetEnvironmentVariable("PRODUCTS_MICROSERVICE_PORT");
