@@ -1,21 +1,23 @@
 name: Orders API CD
 
+# Trigger the workflow on push or pull request events to the main branch
 on:
   workflow_run:
     workflows: ["Orders API CI"]
     types:
       - completed
     branches:
-      - main 
+      - main
 
 jobs:
+    # This job will only run if the CI workflow completed successfully
   deploy-to-local-cluster:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: self-hosted
-
     steps:
     - name: Verify Local Kubernetes Connection
       run: kubectl get nodes
-
-    - name: Hello from Local Machine
-      run: echo "The self-hosted runner is successfully executing commands on the local machine!"
+    - name: Deploy / Update Image in Kubernetes
+      run: |
+        kubectl set image deployment/orders-api-deployment orders-api=ghcr.io/${{ github.repository_owner }}/ecommerce-orders-api:latest
+        kubectl rollout restart deployment/orders-api-deployment
