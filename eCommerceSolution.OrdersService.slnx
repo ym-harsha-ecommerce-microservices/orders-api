@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="../eCommerce.BLL.Tests/eCommerce.BLL.Tests.csproj" Id="42e6ab6f-4f55-423c-881b-784bb4cf26d4" />
   <Project Path="docker-compose.dcproj">
     <Build />
   </Project>
